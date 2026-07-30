@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}CardioRisk — Heart Disease Risk Predictor{% endblock %}
+{% block page_class %} page--landing{% endblock %}
+
+{% block content %}
+<div class="landing-shell">
+  <div class="landing-bg" aria-hidden="true">
+    <div class="landing-bg-grid"></div>
+
+    <div class="landing-bg-heart">
+      <div class="heart-pulse-ring"></div>
+      <div class="heart-pulse-ring heart-pulse-ring--delay"></div>
+      <svg class="heart-svg" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+        <path d="M462.3 62.6C407.5 15.9 326 24.3 275.7 76.2L256 96.5l-19.7-20.3C186.1 24.3 104.5 15.9 49.7 62.6c-62.2 62.2-62.2 162.7 0 224.9L256 490.7l206.3-203.4c62.2-62.2 62.2-162.7 0-224.9z"/>
+      </svg>
+    </div>
+
+    <div class="landing-bg-monitor">
+      <div class="monitor-header">
+        <span class="monitor-dot"></span>
+        <span class="monitor-label">LIVE ECG</span>
+        <span class="monitor-bpm"><strong>72</strong> BPM</span>
+      </div>
+      <div class="ecg-viewport">
+        <div class="ecg-track">
+          <svg class="ecg-svg" viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path class="ecg-line" d="M0,50 L40,50 L50,50 L58,50 L62,20 L66,80 L70,35 L74,50 L110,50 L120,50 L128,50 L132,18 L136,82 L140,30 L144,50 L180,50 L190,50 L198,50 L202,22 L206,78 L210,38 L214,50 L250,50 L260,50 L268,50 L272,15 L276,85 L280,32 L284,50 L320,50 L330,50 L338,50 L342,20 L346,80 L350,35 L354,50 L390,50 L400,50 L408,50 L412,18 L416,82 L420,30 L424,50 L460,50 L470,50 L478,50 L482,22 L486,78 L490,38 L494,50 L530,50 L540,50 L548,50 L552,15 L556,85 L560,32 L564,50 L600,50"/>
+          </svg>
+          <svg class="ecg-svg" viewBox="0 0 1200 100" preserveAspectRatio="none">
+            <path class="ecg-line" d="M0,50 L40,50 L50,50 L58,50 L62,20 L66,80 L70,35 L74,50 L110,50 L120,50 L128,50 L132,18 L136,82 L140,30 L144,50 L180,50 L190,50 L198,50 L202,22 L206,78 L210,38 L214,50 L250,50 L260,50 L268,50 L272,15 L276,85 L280,32 L284,50 L320,50 L330,50 L338,50 L342,20 L346,80 L350,35 L354,50 L390,50 L400,50 L408,50 L412,18 L416,82 L420,30 L424,50 L460,50 L470,50 L478,50 L482,22 L486,78 L490,38 L494,50 L530,50 L540,50 L548,50 L552,15 L556,85 L560,32 L564,50 L600,50"/>
+          </svg>
+        </div>
+        <div class="ecg-sweep"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="landing-content">
+    <section class="hero">
+      <div class="hero-content">
+        <span class="hero-eyebrow">
+          <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+            <circle cx="12" cy="14" r="2"/>
+          </svg>
+          Powered by machine learning
+        </span>
+        <h2 class="hero-title">Smarter cardiovascular risk assessment</h2>
+        <p class="hero-lead">
+          CardioRisk analyzes patient vitals, lab results, and exercise test data to estimate
+          heart disease probability — with transparent SHAP explanations for every prediction.
+        </p>
+        <div class="hero-actions">
+          <a href="{{ url_for('assess') }}" class="btn btn-primary btn-lg">
+            Start Assessment
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6"/>
+            </svg>
+          </a>
+          <a href="#how-it-works" class="btn btn-secondary btn-lg">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>
+            </svg>
+            How it works
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="hero-card">
+          <div class="hero-card-header">
+            <span class="hero-card-dot"></span>
+            <svg class="icon icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+            Risk Preview
+          </div>
+          <div class="hero-card-body">
+            <div class="hero-ring">
+              <svg viewBox="0 0 100 100">
+                <circle class="hero-ring-bg" cx="50" cy="50" r="42"></circle>
+                <circle class="hero-ring-fill" cx="50" cy="50" r="42"></circle>
+              </svg>
+              <div class="hero-ring-label">
+                <span>68%</span>
+                <small>risk score</small>
+              </div>
+            </div>
+            <div class="hero-card-details">
+              <p class="hero-card-status">Moderate Risk</p>
+              <ul class="hero-card-features">
+                <li><span class="bar bar-high"></span> Exercise Angina</li>
+                <li><span class="bar bar-mid"></span> ST Depression</li>
+                <li><span class="bar bar-low"></span> Max Heart Rate</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-bar">
+      <div class="stats-bar-inner">
+        <div class="stat-block">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-7"/>
+          </svg>
+          <span class="stat-block-value">0.911</span>
+          <span class="stat-block-label">AUC-ROC</span>
+        </div>
+        <div class="stat-block">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M12 20V10M18 20V4M6 20v-4"/>
+          </svg>
+          <span class="stat-block-value">0.818</span>
+          <span class="stat-block-label">F1 Score</span>
+        </div>
+        <div class="stat-block">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+            <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+          <span class="stat-block-value">15</span>
+          <span class="stat-block-label">Clinical Features</span>
+        </div>
+        <div class="stat-block">
+          <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+          </svg>
+          <span class="stat-block-value">&lt; 1s</span>
+          <span class="stat-block-label">Prediction Time</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="features">
+      <div class="section-heading">
+        <h3>Built for clinical workflows</h3>
+        <p>Everything you need to support informed cardiovascular screening decisions.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 2a4 4 0 0 1 4 4v1h1a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H8a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3h1V6a4 4 0 0 1 4-4z"/>
+              <path d="M9 14h6M10 11h4"/>
+            </svg>
+          </div>
+          <h4>Validated ML Model</h4>
+          <p>Logistic regression trained on the Cleveland heart disease dataset with cross-validated performance metrics.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/>
+              <path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/>
+              <path d="M18 12a2 2 0 0 0 0 4h4v-4h-4z"/>
+            </svg>
+          </div>
+          <h4>SHAP Explanations</h4>
+          <p>See which patient features most influenced the prediction — increasing or decreasing estimated risk.</p>
+        </article>
+        <article class="feature-card">
+          <div class="feature-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <path d="M12 9v4M12 17h.01"/>
+            </svg>
+          </div>
+          <h4>Risk Stratification</h4>
+          <p>Clear Low, Moderate, and High risk categories with probability scores to guide follow-up conversations.</p>
+        </article>
+      </div>
+    </section>
+
+    <section id="how-it-works" class="steps">
+      <div class="section-heading">
+        <h3>How it works</h3>
+        <p>Three steps from patient data to actionable insight.</p>
+      </div>
+      <ol class="steps-list">
+        <li class="step-item">
+          <div class="step-badge">
+            <span class="step-number">1</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+              <rect x="8" y="2" width="8" height="4" rx="1"/>
+              <path d="M9 14h6M9 18h4M9 10h6"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Enter clinical data</h4>
+            <p>Fill in demographics, vitals, cholesterol, ECG results, and exercise test measurements.</p>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-badge">
+            <span class="step-number">2</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <rect x="4" y="4" width="16" height="16" rx="2"/>
+              <path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Run the model</h4>
+            <p>Features are scaled and scored by the trained classifier to produce a probability estimate.</p>
+          </div>
+        </li>
+        <li class="step-item">
+          <div class="step-badge">
+            <span class="step-number">3</span>
+            <svg class="step-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
+          </div>
+          <div>
+            <h4>Review the report</h4>
+            <p>Get a risk level, probability score, and SHAP breakdown of the top contributing factors.</p>
+          </div>
+        </li>
+      </ol>
+    </section>
+
+    <section class="cta-banner">
+      <div class="cta-banner-inner">
+        <div class="cta-banner-text">
+          <svg class="cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+          <div>
+            <h3>Ready to assess a patient?</h3>
+            <p>The intake form takes about two minutes to complete.</p>
+          </div>
+        </div>
+        <a href="{{ url_for('assess') }}" class="btn btn-primary btn-lg">Begin Assessment</a>
+      </div>
+    </section>
+
+    <p class="disclaimer">
+      <strong>Disclaimer:</strong> CardioRisk is a decision support aid only and does not constitute a clinical diagnosis.
+      Always consult a qualified healthcare professional before making treatment decisions.
+    </p>
+  </div>
+</div>
+{% endblock %}

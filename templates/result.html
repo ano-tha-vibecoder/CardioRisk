@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Assessment Result — CardioRisk{% endblock %}
+
+{% block content %}
+<div class="page-intro">
+  <h2>Assessment Result</h2>
+  <p>Prediction generated from the submitted clinical profile. Review feature contributions below.</p>
+</div>
+
+{% set risk_class = 'risk-low' if risk == 'Low' else 'risk-moderate' if risk == 'Moderate' else 'risk-high' %}
+{% set circumference = 283 %}
+{% set dash_offset = circumference - (circumference * prob / 100) %}
+
+<div class="card" style="margin-bottom: 20px;">
+  <div class="result-hero {{ risk_class }}">
+    <div class="prob-ring" aria-label="Probability {{ prob }} percent">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <circle class="prob-ring-bg" cx="50" cy="50" r="45"></circle>
+        <circle class="prob-ring-fill" cx="50" cy="50" r="45"
+          stroke-dasharray="{{ circumference }}"
+          stroke-dashoffset="{{ dash_offset }}"></circle>
+      </svg>
+      <div class="prob-ring-text">
+        <span class="value">{{ prob }}</span>
+        <span class="unit">% risk</span>
+      </div>
+    </div>
+    <div class="result-content">
+      <h2>{{ 'Heart Disease Detected' if pred == 1 else 'No Heart Disease Detected' }}</h2>
+      <p>Based on logistic regression analysis of patient vitals and exercise test results.</p>
+      <span class="risk-badge">
+        <span aria-hidden="true">&#9679;</span>
+        {{ risk }} Risk
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="model-stats">
+  <div class="stat-item">
+    <span class="stat-value">Logistic Reg.</span>
+    <span class="stat-label">Model</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value">0.911</span>
+    <span class="stat-label">AUC-ROC</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-value">0.818</span>
+    <span class="stat-label">F1 Score</span>
+  </div>
+</div>
+
+<div class="card" style="margin-top: 20px;">
+  <div class="card-header">
+    <h3>Feature Influence (SHAP)</h3>
+    <p>Top factors pushing the prediction toward or away from heart disease.</p>
+  </div>
+  <div class="card-body">
+    <div class="shap-list">
+      {% for fname, fval in shap_pairs %}
+      {% set bar_pct = [([fval|abs * 100, 100]|min), 5]|max %}
+      {% set direction = 'positive' if fval > 0 else 'negative' %}
+      <div class="shap-row">
+        <span class="shap-label">{{ feature_labels.get(fname, fname) }}</span>
+        <div class="shap-bar-wrap">
+          <div class="shap-bar-track">
+            <div class="shap-bar-fill {{ direction }}" style="width: {{ bar_pct }}%"></div>
+          </div>
+        </div>
+        <span class="shap-val {{ direction }}">{{ "%+.3f"|format(fval) }}</span>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="shap-legend">
+      <span class="legend-item">
+        <span class="legend-dot positive"></span> Increases risk
+      </span>
+      <span class="legend-item">
+        <span class="legend-dot negative"></span> Decreases risk
+      </span>
+    </div>
+  </div>
+</div>
+
+<div class="result-actions">
+  <a href="{{ url_for('assess') }}" class="btn btn-primary">Assess Another Patient</a>
+  <button type="button" class="btn btn-secondary" onclick="window.print()">Print Report</button>
+</div>
+
+<p class="disclaimer">
+  <strong>Disclaimer:</strong> This tool is a decision support aid only and does not constitute a clinical diagnosis.
+  Always consult a qualified healthcare professional. Ghost Grid Technologies, 2024.
+</p>
+{% endblock %}
