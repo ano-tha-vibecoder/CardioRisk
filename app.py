@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, render_template
 import joblib
 import numpy as np
@@ -6,12 +7,14 @@ import shap
 
 app = Flask(__name__)
 
-model    = joblib.load('models/best_model.pkl')
-scaler   = joblib.load('models/scaler.pkl')
-features = joblib.load('models/selected_features.pkl')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+model    = joblib.load(os.path.join(BASE_DIR, 'models/best_model.pkl'))
+scaler   = joblib.load(os.path.join(BASE_DIR, 'models/scaler.pkl'))
+features = joblib.load(os.path.join(BASE_DIR, 'models/selected_features.pkl'))
 
 # Build explainer background from full training data
-df_bg    = pd.read_csv('data/heart_cleveland_upload.csv')
+df_bg    = pd.read_csv(os.path.join(BASE_DIR, 'data/heart_cleveland_upload.csv'))
 X_bg     = df_bg.drop('condition', axis=1)
 X_bg     = pd.get_dummies(X_bg, columns=['cp','restecg','thal','slope'], drop_first=True)
 X_bg['hr_bp_ratio'] = X_bg['thalach'] / X_bg['trestbps']
@@ -121,4 +124,5 @@ def assess():
     return render_template('assess.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
