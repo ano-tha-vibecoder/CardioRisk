@@ -1,0 +1,2 @@
+pytest==8.4.1
+imbalanced-learn==0.14.0
