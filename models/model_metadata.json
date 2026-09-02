@@ -1,0 +1,33 @@
+{
+  "model_version": "2.0.0",
+  "training_timestamp": "2026-09-02T11:30:33.493740+00:00",
+  "training_data_sha256": "18f18f1d0a342f3aa6322bf4150fcab0f00fea138debcdc8fbfb0227883607db",
+  "evaluation": {
+    "accuracy": 0.9166666666666666,
+    "auc": 0.9631696428571428,
+    "f1": 0.9019607843137255
+  },
+  "evaluation_split": {
+    "test_size": 0.2,
+    "random_state": 42,
+    "stratified": true
+  },
+  "selected_features": [
+    "sex",
+    "trestbps",
+    "fbs",
+    "thalach",
+    "exang",
+    "oldpeak",
+    "ca",
+    "cp_1",
+    "cp_2",
+    "cp_3",
+    "restecg_2",
+    "thal_1",
+    "thal_2",
+    "slope_1",
+    "slope_2",
+    "hr_bp_ratio"
+  ]
+}

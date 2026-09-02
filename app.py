@@ -1,9 +1,12 @@
 import os
+import json
 from flask import Flask, request, render_template
 import joblib
 import numpy as np
 import pandas as pd
 import shap
+
+from preprocessing import ClevelandPreprocessor
 
 app = Flask(__name__)
 
@@ -12,12 +15,13 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 model    = joblib.load(os.path.join(BASE_DIR, 'models/best_model.pkl'))
 scaler   = joblib.load(os.path.join(BASE_DIR, 'models/scaler.pkl'))
 features = joblib.load(os.path.join(BASE_DIR, 'models/selected_features.pkl'))
+preprocessor = joblib.load(os.path.join(BASE_DIR, 'models/preprocessor.pkl'))
+with open(os.path.join(BASE_DIR, 'models/model_metadata.json')) as metadata_file:
+    model_metadata = json.load(metadata_file)
 
 # Build explainer background from full training data
 df_bg    = pd.read_csv(os.path.join(BASE_DIR, 'data/heart_cleveland_upload.csv'))
-X_bg     = df_bg.drop('condition', axis=1)
-X_bg     = pd.get_dummies(X_bg, columns=['cp','restecg','thal','slope'], drop_first=True)
-X_bg['hr_bp_ratio'] = X_bg['thalach'] / X_bg['trestbps']
+X_bg     = preprocessor.transform(df_bg.drop('condition', axis=1))
 X_bg_sel = X_bg[features]
 X_bg_sc  = scaler.transform(X_bg_sel)
 explainer = shap.LinearExplainer(model, X_bg_sc)
@@ -61,42 +65,16 @@ def assess():
             oldpeak  = float(form['oldpeak'])
             ca       = float(form['ca'])
 
-            cp        = form['cp']
-            cp_2      = 1.0 if cp == 'non'          else 0.0
-            cp_3      = 1.0 if cp == 'asymptomatic' else 0.0
-
-            restecg   = form['restecg']
-            restecg_2 = 1.0 if restecg == 'lv'       else 0.0
-
-            thal      = form['thal']
-            thal_2    = 1.0 if thal == 'reversible'  else 0.0
-
-            slope     = form['slope']
-            slope_1   = 1.0 if slope == 'flat'       else 0.0
-
-            hr_bp_ratio = thalach / trestbps
-
-            feature_map = {
-                'age':         age,
-                'sex':         sex,
-                'trestbps':    trestbps,
-                'chol':        chol,
-                'fbs':         fbs,
-                'thalach':     thalach,
-                'exang':       exang,
-                'oldpeak':     oldpeak,
-                'ca':          ca,
-                'cp_2':        cp_2,
-                'cp_3':        cp_3,
-                'restecg_2':   restecg_2,
-                'thal_2':      thal_2,
-                'slope_1':     slope_1,
-                'hr_bp_ratio': hr_bp_ratio,
-            }
-
-            vals     = [feature_map[f] for f in features]
-            x_raw    = np.array(vals).reshape(1, -1)
-            x_scaled = scaler.transform(x_raw)
+            raw_input = pd.DataFrame([{
+                'age': age, 'sex': sex, 'cp': int({'typical': 0, 'atypical': 1, 'non': 2, 'asymptomatic': 3}[form['cp']]),
+                'trestbps': trestbps, 'chol': chol, 'fbs': fbs,
+                'restecg': int({'normal': 0, 'stt': 1, 'lv': 2}[form['restecg']]),
+                'thalach': thalach, 'exang': exang, 'oldpeak': oldpeak,
+                'slope': int({'up': 0, 'flat': 1, 'down': 2}[form['slope']]),
+                'ca': ca, 'thal': int({'normal': 0, 'fixed': 1, 'reversible': 2}[form['thal']]),
+            }])
+            x_features = preprocessor.transform(raw_input)[features]
+            x_scaled = scaler.transform(x_features)
 
             prob  = model.predict_proba(x_scaled)[0][1]
             pred  = int(prob >= 0.5)
@@ -116,7 +94,8 @@ def assess():
                 risk=risk,
                 color=color,
                 shap_pairs=shap_pairs,
-                feature_labels=FEATURE_LABELS)
+                feature_labels=FEATURE_LABELS,
+                model_metadata=model_metadata)
 
         except Exception as e:
             return render_template('assess.html', error=str(e))

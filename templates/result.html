@@ -43,11 +43,11 @@
     <span class="stat-label">Model</span>
   </div>
   <div class="stat-item">
-    <span class="stat-value">0.911</span>
+    <span class="stat-value">{{ '%.3f'|format(model_metadata.evaluation.auc) }}</span>
     <span class="stat-label">AUC-ROC</span>
   </div>
   <div class="stat-item">
-    <span class="stat-value">0.818</span>
+    <span class="stat-value">{{ '%.3f'|format(model_metadata.evaluation.f1) }}</span>
     <span class="stat-label">F1 Score</span>
   </div>
 </div>
