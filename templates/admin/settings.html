@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Security settings — CardioRisk{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<form method="POST" class="card narrow-card">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body">
+    <label class="checkbox">
+      <input type="checkbox" name="require_mfa" value="1" {% if org.require_mfa %}checked{% endif %}>
+      <span><strong>Require two-factor authentication</strong><br>
+      <span class="hint">Users without it are sent to set it up at their next page load, including you.</span></span>
+    </label>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-primary">Save</button></div>
+</form>
+{% endblock %}

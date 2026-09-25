@@ -1,32 +1,37 @@
 {% extends "base.html" %}
+{% from "_macros.html" import when %}
 
-{% block title %}Assessment Result — CardioRisk{% endblock %}
+{% block title %}Assessment — {{ patient.full_name }} — CardioRisk{% endblock %}
 {% block scripts %}<script src="{{ url_for('static', filename='js/result.js') }}" defer></script>{% endblock %}
 
 {% block content %}
 {% set metrics = model_metadata.evaluation.metrics %}
+{% set prob = (a.probability * 100)|round(1) %}
 <div class="page-intro">
-  <h2>Assessment Result</h2>
-  <p>Estimate generated from the submitted clinical profile. Review feature contributions below.</p>
+  <h2>Assessment result</h2>
+  <p>
+    <a href="{{ url_for('patients.detail', patient_id=patient.id) }}">{{ patient.full_name }}</a> · MRN {{ patient.mrn }} ·
+    {{ when(a.created_at) }} UTC by {{ a.clinician.name }} · model v{{ a.model_version }}
+  </p>
 </div>
 
-{% if warnings %}
+{% if a.warnings %}
 <div class="alert alert-warning" role="status">
   <span class="alert-icon" aria-hidden="true">&#9888;</span>
   <div>
     <strong>Interpret with caution.</strong>
-    <ul class="alert-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+    <ul class="alert-list">{% for w in a.warnings %}<li>{{ w }}</li>{% endfor %}</ul>
   </div>
 </div>
 {% endif %}
 
-{% set risk_class = 'risk-low' if result.risk == 'Low' else 'risk-moderate' if result.risk == 'Moderate' else 'risk-high' %}
+{% set risk_class = 'risk-low' if a.risk_band == 'Low' else 'risk-moderate' if a.risk_band == 'Moderate' else 'risk-high' %}
 {% set circumference = 283 %}
-{% set dash_offset = circumference - (circumference * result.prob / 100) %}
+{% set dash_offset = circumference - (circumference * prob / 100) %}
 
 <div class="card card--spaced-bottom">
   <div class="result-hero {{ risk_class }}">
-    <div class="prob-ring" role="img" aria-label="Estimated probability {{ result.prob }} percent">
+    <div class="prob-ring" role="img" aria-label="Estimated probability {{ prob }} percent">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle class="prob-ring-bg" cx="50" cy="50" r="45"></circle>
         <circle class="prob-ring-fill" cx="50" cy="50" r="45"
@@ -34,28 +39,47 @@
           stroke-dashoffset="{{ dash_offset }}"></circle>
       </svg>
       <div class="prob-ring-text">
-        <span class="value">{{ result.prob }}</span>
+        <span class="value">{{ prob }}</span>
         <span class="unit">% probability</span>
       </div>
     </div>
     <div class="result-content">
-      <h2>{{ 'Elevated probability of coronary artery disease' if result.positive else 'Low-to-moderate probability of coronary artery disease' }}</h2>
-      <p>Estimated by a logistic regression model trained on the UCI Cleveland cohort
+      <h2>{{ 'Elevated probability of coronary artery disease' if a.positive else 'Low-to-moderate probability of coronary artery disease' }}</h2>
+      <p>ML estimate from a logistic regression model trained on the UCI Cleveland cohort
         ({{ model_metadata.training_data.n_samples }} patients referred for angiography,
         {{ '%.0f'|format(model_metadata.training_data.prevalence * 100) }}% disease prevalence).
         Probabilities reflect that referral population, not the general public.</p>
       <span class="risk-badge">
         <span aria-hidden="true">&#9679;</span>
-        {{ result.risk }} Risk
+        {{ a.risk_band }} Risk
       </span>
     </div>
+  </div>
+</div>
+
+<div class="card card--spaced-bottom">
+  <div class="card-header">
+    <h3>Guideline pre-test probability (ESC 2019)</h3>
+    <p>From age, sex and chest-pain type only, using contemporary cohorts. Shown alongside the ML estimate; the two are on different reference populations.</p>
+  </div>
+  <div class="card-body ptp">
+    {% if a.ptp is not none %}
+    <span class="ptp-value">{{ '%.0f'|format(a.ptp) }}%</span>
+    {% endif %}
+    <p class="ptp-note">{{ a.ptp_note }}</p>
+    {% if discordant %}
+    <div class="alert alert-warning" role="status">
+      <span class="alert-icon" aria-hidden="true">&#9888;</span>
+      <div><strong>Estimates disagree.</strong> The guideline table and the ML model point in opposite directions. Check the inputs and rely on clinical judgement.</div>
+    </div>
+    {% endif %}
   </div>
 </div>
 
 <div class="model-stats">
   <div class="stat-item">
     <span class="stat-value">v{{ model_metadata.model_version }}</span>
-    <span class="stat-label">Logistic Reg.</span>
+    <span class="stat-label">Current model</span>
   </div>
   <div class="stat-item">
     <span class="stat-value">{{ '%.2f'|format(metrics.auc.mean) }} ± {{ '%.2f'|format(metrics.auc.std) }}</span>
@@ -69,12 +93,12 @@
 
 <div class="card card--spaced-top">
   <div class="card-header">
-    <h3>Feature Influence (SHAP)</h3>
-    <p>How much each of this patient's values moved the estimate above or below the cohort average (log-odds units). These describe the model's behaviour, not causes.</p>
+    <h3>Feature influence (SHAP)</h3>
+    <p>How much each of this patient's values moved the ML estimate above or below the cohort average (log-odds units). These describe the model's behaviour, not causes.</p>
   </div>
   <div class="card-body">
     <div class="shap-list">
-      {% for c in result.contributions %}
+      {% for c in a.contributions %}
       {% set direction = 'positive' if c.value > 0 else 'negative' %}
       <div class="shap-row">
         <span class="shap-label">{{ c.label }}: <span class="shap-shown">{{ c.shown }}</span></span>
@@ -99,8 +123,8 @@
 </div>
 
 <div class="result-actions">
-  <a href="{{ url_for('assess') }}" class="btn btn-primary">Assess Another Patient</a>
-  <button type="button" class="btn btn-secondary" data-action="print">Print Report</button>
+  <a href="{{ url_for('patients.assess', patient_id=patient.id) }}" class="btn btn-primary">New assessment for this patient</a>
+  <button type="button" class="btn btn-secondary" data-action="print">Print report</button>
 </div>
 
 <p class="disclaimer">

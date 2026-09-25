@@ -1,0 +1,17 @@
+{% macro risk_pill(band) -%}
+<span class="risk-pill risk-pill--{{ band|lower }}"><span aria-hidden="true">&#9679;</span> {{ band }}</span>
+{%- endmacro %}
+
+{% macro when(dt) -%}
+<time datetime="{{ dt.isoformat() }}Z">{{ dt.strftime('%Y-%m-%d %H:%M') }}</time>
+{%- endmacro %}
+
+{% macro pager(page, endpoint) -%}
+{% if page.pages > 1 %}
+<nav class="pager" aria-label="Pagination">
+  {% if page.has_prev %}<a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, page=page.prev_num, **kwargs) }}">Previous</a>{% endif %}
+  <span>Page {{ page.page }} of {{ page.pages }}</span>
+  {% if page.has_next %}<a class="btn btn-secondary btn-sm" href="{{ url_for(endpoint, page=page.next_num, **kwargs) }}">Next</a>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}

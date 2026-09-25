@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit patient' if patient else 'New patient' }} — CardioRisk{% endblock %}
+{% macro field(name, label, type='text', hint=None, attrs='') %}
+<div class="form-group{% if errors.get(name) %} has-error{% endif %}">
+  <label for="{{ name }}">{{ label }}</label>
+  {% if hint %}<span class="hint" id="{{ name }}-hint">{{ hint }}</span>{% endif %}
+  <input type="{{ type }}" id="{{ name }}" name="{{ name }}" value="{{ form.get(name, '') }}" required {{ attrs }}
+         {% if errors.get(name) %}aria-invalid="true" aria-describedby="{{ name }}-error"{% endif %}>
+  {% if errors.get(name) %}<span class="field-error" id="{{ name }}-error">{{ errors[name] }}</span>{% endif %}
+</div>
+{% endmacro %}
+{% block content %}
+<div class="page-intro">
+  <h2>{{ 'Edit patient' if patient else 'New patient' }}</h2>
+  <p>Demographics are shared by every assessment for this patient.</p>
+</div>
+{% if errors %}<div class="alert alert-error" role="alert"><div><strong>Please correct the highlighted fields.</strong></div></div>{% endif %}
+<form method="POST" class="card" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body">
+    <div class="form-grid">
+      {{ field('first_name', 'First name', attrs='maxlength=100 autocomplete=off') }}
+      {{ field('last_name', 'Last name', attrs='maxlength=100 autocomplete=off') }}
+      {{ field('mrn', 'Medical record number', hint="Your clinic's patient identifier", attrs='maxlength=64 autocomplete=off') }}
+      {{ field('date_of_birth', 'Date of birth', type='date') }}
+      <div class="form-group{% if errors.get('sex') %} has-error{% endif %}">
+        <label for="sex">Sex</label>
+        <span class="hint" id="sex-hint">The model's training data records sex as male or female.</span>
+        <select id="sex" name="sex" aria-describedby="sex-hint">
+          <option value="" {% if not form.get('sex') %}selected{% endif %} disabled>Select…</option>
+          <option value="F"{% if form.get('sex') == 'F' %} selected{% endif %}>Female</option>
+          <option value="M"{% if form.get('sex') == 'M' %} selected{% endif %}>Male</option>
+        </select>
+        {% if errors.get('sex') %}<span class="field-error">{{ errors['sex'] }}</span>{% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="form-actions">
+    <button type="submit" class="btn btn-primary">{{ 'Save changes' if patient else 'Create patient' }}</button>
+    <a class="btn btn-secondary" href="{{ url_for('patients.detail', patient_id=patient.id) if patient else url_for('patients.index') }}">Cancel</a>
+  </div>
+</form>
+{% endblock %}
