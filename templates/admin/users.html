@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% from "_macros.html" import when %}
+{% block title %}Users — CardioRisk{% endblock %}
+{% macro action(user, name, label, cls='btn-secondary') %}
+<form method="POST" action="{{ url_for('admin.user_action', user_id=user.id, action=name) }}" class="inline-form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="btn btn-sm {{ cls }}">{{ label }}</button>
+</form>
+{% endmacro %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<section class="card">
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">Name</th><th scope="col">Email</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col">2FA</th><th scope="col">Last sign-in</th><th scope="col">Actions</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+        <tr>
+          <td>{{ u.name }}{% if u.id == current_user.id %} <span class="muted">(you)</span>{% endif %}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.role|capitalize }}</td>
+          <td>{% if not u.active %}Deactivated{% elif u.locked_until and u.locked_until > now %}Locked{% elif u.must_change_password %}Pending password change{% else %}Active{% endif %}</td>
+          <td>{{ 'On' if u.mfa_secret else 'Off' }}</td>
+          <td>{{ when(u.last_login_at) if u.last_login_at else '—' }}</td>
+          <td class="actions">
+            {% if u.id != current_user.id %}
+              {% if u.active %}{{ action(u, 'deactivate', 'Deactivate') }}{% else %}{{ action(u, 'activate', 'Reactivate') }}{% endif %}
+              {% if u.is_admin %}{{ action(u, 'make_clinician', 'Make clinician') }}{% else %}{{ action(u, 'make_admin', 'Make admin') }}{% endif %}
+              {{ action(u, 'reset_password', 'Reset password') }}
+              {% if u.mfa_secret %}{{ action(u, 'reset_mfa', 'Reset 2FA') }}{% endif %}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<form method="POST" action="{{ url_for('admin.create_user') }}" class="card card--spaced-top" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-header"><h3>Add a user</h3><p>They receive a one-time temporary password and must change it at first sign-in.</p></div>
+  <div class="card-body">
+    {% if error %}<div class="alert alert-error" role="alert"><div>{{ error }}</div></div>{% endif %}
+    <div class="form-grid">
+      <div class="form-group"><label for="name">Name</label><input id="name" name="name" maxlength="200" required value="{{ (form or {}).get('name', '') }}"></div>
+      <div class="form-group"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="254" required value="{{ (form or {}).get('email', '') }}"></div>
+      <div class="form-group"><label for="role">Role</label>
+        <select id="role" name="role">
+          {% for r in roles %}<option value="{{ r }}"{% if (form or {}).get('role', 'clinician') == r %} selected{% endif %}>{{ r|capitalize }}</option>{% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-primary">Add user</button></div>
+</form>
+{% endblock %}

@@ -22,3 +22,7 @@ Thumbs.db
 
 # Generated plots (uncomment if they can be regenerated)
 # *.png
+# Tooling
+.venv/
+.pytest_cache/
+instance/

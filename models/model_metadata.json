@@ -1,20 +1,59 @@
 {
-  "model_version": "2.0.0",
-  "training_timestamp": "2026-09-02T11:30:33.493740+00:00",
-  "training_data_sha256": "18f18f1d0a342f3aa6322bf4150fcab0f00fea138debcdc8fbfb0227883607db",
+  "model_version": "3.0.0",
+  "model_type": "L2-regularised logistic regression",
+  "training_timestamp": "2026-09-25T05:10:03.292651+00:00",
+  "training_data": {
+    "source": "UCI Cleveland heart disease (297 complete cases)",
+    "sha256": "18f18f1d0a342f3aa6322bf4150fcab0f00fea138debcdc8fbfb0227883607db",
+    "n_samples": 297,
+    "prevalence": 0.4612794612794613,
+    "target": "angiographic coronary artery disease (>50% diameter narrowing)"
+  },
+  "artifact": {
+    "file": "cardio_pipeline.joblib",
+    "sha256": "0fe5c7a10d35bd082d6fd58722bb04372bee8652edc33ab8e96e3597b77a8271",
+    "sklearn_version": "1.8.0"
+  },
   "evaluation": {
-    "accuracy": 0.9166666666666666,
-    "auc": 0.9631696428571428,
-    "f1": 0.9019607843137255
+    "method": "repeated stratified 5-fold CV x 10 repeats",
+    "decision_threshold": 0.5,
+    "metrics": {
+      "auc": {
+        "mean": 0.910064484126984,
+        "std": 0.03064577328898839
+      },
+      "brier": {
+        "mean": 0.11971617752130861,
+        "std": 0.0202375395988507
+      },
+      "accuracy": {
+        "mean": 0.835677966101695,
+        "std": 0.04277232627586808
+      },
+      "f1": {
+        "mean": 0.8141784510296837,
+        "std": 0.04962360125916601
+      },
+      "sensitivity": {
+        "mean": 0.7823280423280423,
+        "std": 0.061002881783583394
+      },
+      "specificity": {
+        "mean": 0.88125,
+        "std": 0.053033008588991064
+      }
+    }
   },
-  "evaluation_split": {
-    "test_size": 0.2,
-    "random_state": 42,
-    "stratified": true
+  "decision_threshold": 0.5,
+  "risk_bands": {
+    "moderate": 0.35,
+    "high": 0.65
   },
-  "selected_features": [
+  "features": [
+    "age",
     "sex",
     "trestbps",
+    "chol",
     "fbs",
     "thalach",
     "exang",
@@ -23,6 +62,7 @@
     "cp_1",
     "cp_2",
     "cp_3",
+    "restecg_1",
     "restecg_2",
     "thal_1",
     "thal_2",

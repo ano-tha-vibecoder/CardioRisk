@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "_macros.html" import when, pager %}
+{% block title %}Audit log — CardioRisk{% endblock %}
+{% block content %}
+{% include "admin/_nav.html" %}
+<section class="card">
+  {% if page.items %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">When</th><th scope="col">User</th><th scope="col">Action</th><th scope="col">Target</th><th scope="col">IP</th><th scope="col">Detail</th></tr></thead>
+      <tbody>
+        {% for e in page.items %}
+        <tr>
+          <td>{{ when(e.created_at) }}</td>
+          <td>{{ e.user.email if e.user else '—' }}</td>
+          <td>{{ e.action|replace('_', ' ') }}</td>
+          <td>{{ e.target_type ~ ' #' ~ e.target_id if e.target_type else '—' }}</td>
+          <td>{{ e.ip or '—' }}</td>
+          <td class="muted">{% if e.detail %}{% for k, v in e.detail.items() %}{{ k }}={{ v }}{% if not loop.last %}, {% endif %}{% endfor %}{% endif %}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body"><p class="empty">No events yet.</p></div>
+  {% endif %}
+</section>
+{{ pager(page, 'admin.audit_log') }}
+{% endblock %}
