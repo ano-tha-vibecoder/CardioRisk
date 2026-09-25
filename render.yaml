@@ -1,0 +1,36 @@
+# Render Blueprint for the public portfolio demo (render.com > New > Blueprint).
+# Check Render's current free-tier terms: free web services sleep when idle
+# and free Postgres databases have historically expired after a fixed period.
+services:
+  - type: web
+    name: cardiorisk-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    # One worker with threads: each process loads pandas + scikit-learn, and
+    # the free instance has 512 MB. Migrations and demo seeding run at start-up because free instances have
+    # no pre-deploy step or shell. Both are idempotent.
+    startCommand: >-
+      flask --app app db upgrade &&
+      flask --app app seed-demo --if-missing &&
+      gunicorn app:app --workers 1 --threads 4 --timeout 30 --access-logfile -
+    healthCheckPath: /healthz
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DEMO_MODE
+        value: "1"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEMO_PASSWORD
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: "3.11.15"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cardiorisk-db
+          property: connectionString
+
+databases:
+  - name: cardiorisk-db
+    plan: free

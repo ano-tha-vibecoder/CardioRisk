@@ -13,3 +13,4 @@ psycopg[binary]==3.3.6
 pyotp==2.10.0
 qrcode==8.2
 scikit-learn==1.8.0
+tzdata==2026.4

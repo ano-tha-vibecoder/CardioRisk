@@ -46,7 +46,7 @@ def _safe_next(target: str | None) -> str | None:
 
 
 def _register_failure(user: User | None, email: str, reason: str) -> None:
-    if user is not None:
+    if user is not None and not current_app.config["DEMO_MODE"]:
         user.failed_logins += 1
         if user.failed_logins >= current_app.config["LOGIN_MAX_FAILURES"]:
             user.locked_until = utcnow() + timedelta(minutes=current_app.config["LOGIN_LOCKOUT_MINUTES"])

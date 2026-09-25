@@ -106,6 +106,23 @@ def detail(patient_id):
                            age=patient.age_on(date.today()))
 
 
+def create_assessment(patient, values, warnings, clinician, created_at=None) -> Assessment:
+    """Score validated inputs and add the immutable record (caller commits)."""
+    result = ml.predict(values)
+    ptp = scores.esc_2019_ptp(values["age"], values["sex"], values["cp"])
+    assessment = Assessment(
+        org_id=patient.org_id, patient_id=patient.id, clinician_id=clinician.id,
+        created_at=created_at or utcnow(), inputs=values, model_version=result["model_version"],
+        probability=result["probability"], risk_band=result["risk"], positive=result["positive"],
+        contributions=result["contributions"], warnings=warnings,
+        ptp=ptp.percent, ptp_note=ptp.note,
+    )
+    db.session.add(assessment)
+    db.session.flush()
+    audit.record("assessment_created", assessment, user=clinician)
+    return assessment
+
+
 @bp.route("/patients/<int:patient_id>/assess", methods=["GET", "POST"])
 @login_required
 def assess(patient_id):
@@ -121,23 +138,12 @@ def assess(patient_id):
         return render_template("assess.html", patient=patient, age=age,
                                form=request.form, errors=errors), 422
     try:
-        result = ml.predict(values)
+        assessment = create_assessment(patient, values, warnings, current_user)
     except Exception:
+        db.session.rollback()
         log.exception("prediction failed")  # never log the submitted values (PHI)
         return render_template("assess.html", patient=patient, age=age, form=request.form, errors={},
                                error="The assessment could not be completed. Please try again."), 500
-    ptp = scores.esc_2019_ptp(values["age"], values["sex"], values["cp"])
-
-    assessment = Assessment(
-        org_id=current_user.org_id, patient_id=patient.id, clinician_id=current_user.id,
-        created_at=utcnow(), inputs=values, model_version=result["model_version"],
-        probability=result["probability"], risk_band=result["risk"], positive=result["positive"],
-        contributions=result["contributions"], warnings=warnings,
-        ptp=ptp.percent, ptp_note=ptp.note,
-    )
-    db.session.add(assessment)
-    db.session.flush()
-    audit.record("assessment_created", assessment)
     db.session.commit()
     # Post/redirect/get: a browser refresh must not create a duplicate record.
     return redirect(url_for("patients.assessment", assessment_id=assessment.id))

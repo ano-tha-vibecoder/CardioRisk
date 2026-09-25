@@ -4,15 +4,16 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}CardioRisk{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="{{ url_for('static', filename='fonts/dm-sans-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   {% block head %}{% endblock %}
   {% block scripts %}{% endblock %}
 </head>
 <body>
+  {% if config.DEMO_MODE %}
+  <div class="demo-banner" role="note">Public demo with synthetic data. Do not enter real patient information. Data is reset periodically.</div>
+  {% endif %}
   {% set ep = request.endpoint or '' %}
   <header class="site-header">
     <div class="header-inner">

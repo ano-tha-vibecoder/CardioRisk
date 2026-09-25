@@ -33,13 +33,14 @@ def create_app(overrides: dict | None = None) -> Flask:
     login_manager.login_message = "Please sign in to continue."
     login_manager.session_protection = "strong"
 
-    from . import admin, auth, cli, main, models, patients, security  # noqa: F401
+    from . import admin, auth, cli, main, models, patients, security, timezones  # noqa: F401
 
     @app.context_processor
     def globals_():
         from . import ml
         return {"model_metadata": ml.MODEL_METADATA, "now": models.utcnow()}
 
+    timezones.init_app(app)
     security.init_app(app)
     cli.init_app(app)
     app.register_blueprint(main.bp)

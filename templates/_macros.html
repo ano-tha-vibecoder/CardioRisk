@@ -3,7 +3,7 @@
 {%- endmacro %}
 
 {% macro when(dt) -%}
-<time datetime="{{ dt.isoformat() }}Z">{{ dt.strftime('%Y-%m-%d %H:%M') }}</time>
+{% set local = dt|localtime %}<time datetime="{{ dt.isoformat() }}Z" title="{{ clinic_tz }}">{{ local.strftime('%Y-%m-%d %H:%M') }}</time>
 {%- endmacro %}
 
 {% macro pager(page, endpoint) -%}

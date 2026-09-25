@@ -16,7 +16,7 @@ from cardiorisk.models import Organization, Patient, User  # noqa: E402
 
 PASSWORD = "correct horse battery staple"
 # Set TEST_DATABASE_URL=postgresql+psycopg://... to run the suite against Postgres.
-TEST_DB = os.environ.get("TEST_DATABASE_URL", "sqlite://")
+TEST_DB = os.environ.get("TEST_DATABASE_URL") or "sqlite://"
 
 VALID = {
     "trestbps": "130", "chol": "245", "fbs": "0", "thalach": "150", "exang": "0",

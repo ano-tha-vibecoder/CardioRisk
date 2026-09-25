@@ -8,6 +8,14 @@
   </div>
   <form method="POST" class="card-body" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    {% if config.DEMO_MODE %}
+    <div class="alert alert-success demo-credentials" role="note"><div>
+      <strong>Demo login</strong><br>
+      Admin: <code>admin@cardiorisk.demo</code><br>
+      Clinician: <code>clinician@cardiorisk.demo</code><br>
+      Password: <code>{{ config.DEMO_PASSWORD }}</code>
+    </div></div>
+    {% endif %}
     {% if expired %}<div class="alert alert-warning" role="status"><div>Your session ended. Please sign in again.</div></div>{% endif %}
     {% if error %}<div class="alert alert-error" role="alert"><div>{{ error }}</div></div>{% endif %}
     <div class="form-group">

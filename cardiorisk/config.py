@@ -43,4 +43,8 @@ def load(production: bool, log) -> dict:
         "LOGIN_MAX_FAILURES": 5,
         "LOGIN_LOCKOUT_MINUTES": 15,
         "PRODUCTION": production,
+        # Public portfolio demo: shows the shared demo login, disables account
+        # changes and lockout (a shared account must not be lockable by visitors).
+        "DEMO_MODE": os.environ.get("DEMO_MODE") == "1",
+        "DEMO_PASSWORD": os.environ.get("DEMO_PASSWORD", "cardiorisk-demo"),
     }

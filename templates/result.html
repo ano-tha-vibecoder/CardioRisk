@@ -11,7 +11,7 @@
   <h2>Assessment result</h2>
   <p>
     <a href="{{ url_for('patients.detail', patient_id=patient.id) }}">{{ patient.full_name }}</a> · MRN {{ patient.mrn }} ·
-    {{ when(a.created_at) }} UTC by {{ a.clinician.name }} · model v{{ a.model_version }}
+    {{ when(a.created_at) }} ({{ clinic_tz }}) by {{ a.clinician.name }} · model v{{ a.model_version }}
   </p>
 </div>
 

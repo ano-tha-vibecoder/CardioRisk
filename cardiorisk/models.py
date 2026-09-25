@@ -16,6 +16,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from .extensions import db
 
 ROLES = ("admin", "clinician")
+DEFAULT_TIMEZONE = "Africa/Harare"
 
 
 def utcnow() -> datetime:
@@ -27,6 +28,9 @@ class Organization(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(200), nullable=False)
     require_mfa = db.Column(db.Boolean, nullable=False, default=False)
+    # IANA zone used to display times; everything is stored in UTC.
+    timezone = db.Column(db.String(64), nullable=False, default=DEFAULT_TIMEZONE,
+                         server_default=DEFAULT_TIMEZONE)
     created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
 
     users = db.relationship("User", back_populates="organization", lazy="dynamic")

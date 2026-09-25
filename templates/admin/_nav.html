@@ -1,6 +1,6 @@
 <div class="page-intro"><h2>Administration</h2><p>{{ current_user.organization.name }}</p></div>
 <nav class="tabs" aria-label="Administration">
   <a href="{{ url_for('admin.users') }}" class="tab{% if request.endpoint in ('admin.users', 'admin.create_user') %} tab--active" aria-current="page{% endif %}">Users</a>
-  <a href="{{ url_for('admin.settings') }}" class="tab{% if request.endpoint == 'admin.settings' %} tab--active" aria-current="page{% endif %}">Security settings</a>
+  <a href="{{ url_for('admin.settings') }}" class="tab{% if request.endpoint == 'admin.settings' %} tab--active" aria-current="page{% endif %}">Clinic settings</a>
   <a href="{{ url_for('admin.audit_log') }}" class="tab{% if request.endpoint == 'admin.audit_log' %} tab--active" aria-current="page{% endif %}">Audit log</a>
 </nav>

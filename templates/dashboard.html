@@ -5,7 +5,7 @@
 <div class="page-intro page-intro--row">
   <div>
     <h2>Dashboard</h2>
-    <p>Activity for {{ current_user.organization.name }}. Times are UTC.</p>
+    <p>Activity for {{ current_user.organization.name }}. Times are {{ clinic_tz }}.</p>
   </div>
   <a href="{{ url_for('patients.create') }}" class="btn btn-primary">New patient</a>
 </div>

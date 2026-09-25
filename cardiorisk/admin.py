@@ -1,7 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 
-from . import audit
+from . import audit, timezones
 from .extensions import db
 from .models import ROLES, AuditEvent, User, temporary_password
 from .tenancy import admin_required, get_scoped_or_404, scoped
@@ -96,12 +96,17 @@ def user_action(user_id, action):
 def settings():
     org = current_user.organization
     if request.method == "POST":
+        zone = request.form.get("timezone") or org.timezone
+        if zone not in timezones.choices():
+            flash("Choose a time zone from the list.", "error")
+            return redirect(url_for("admin.settings"))
         org.require_mfa = request.form.get("require_mfa") == "1"
-        audit.record("org_settings_changed", org, require_mfa=org.require_mfa)
+        org.timezone = zone
+        audit.record("org_settings_changed", org, require_mfa=org.require_mfa, timezone=zone)
         db.session.commit()
         flash("Settings saved.")
         return redirect(url_for("admin.settings"))
-    return render_template("admin/settings.html", org=org)
+    return render_template("admin/settings.html", org=org, zones=timezones.choices())
 
 
 @bp.route("/audit")
