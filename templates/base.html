@@ -3,18 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Heart Disease Risk Predictor{% endblock %}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <title>{% block title %}CardioRisk{% endblock %}</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/dm-sans-latin-wght-normal.woff2') }}" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
   {% block head %}{% endblock %}
   {% block scripts %}{% endblock %}
 </head>
 <body>
+  {% if config.DEMO_MODE %}
+  <div class="demo-banner" role="note">Public demo with synthetic data. Do not enter real patient information. Data is reset periodically.</div>
+  {% endif %}
+  {% set ep = request.endpoint or '' %}
   <header class="site-header">
     <div class="header-inner">
-      <a href="{{ url_for('landing') }}" class="brand">
+      <a href="{{ url_for('main.dashboard') if current_user.is_authenticated else url_for('main.landing') }}" class="brand">
         <div class="brand-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
@@ -22,17 +25,37 @@
         </div>
         <div class="brand-text">
           <h1>CardioRisk</h1>
-          <span>Clinical Decision Support</span>
+          <span>{{ current_user.organization.name if current_user.is_authenticated else 'Clinical Decision Support' }}</span>
         </div>
       </a>
       <nav class="header-nav" aria-label="Main navigation">
-        <a href="{{ url_for('landing') }}" class="nav-link{% if request.endpoint == 'landing' %} nav-link--active" aria-current="page{% endif %}">Home</a>
-        <a href="{{ url_for('assess') }}" class="nav-link nav-link--cta{% if request.endpoint == 'assess' %} nav-link--active" aria-current="page{% endif %}">Start Assessment</a>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('main.dashboard') }}" class="nav-link{% if ep == 'main.dashboard' %} nav-link--active" aria-current="page{% endif %}">Dashboard</a>
+          <a href="{{ url_for('patients.index') }}" class="nav-link{% if ep.startswith('patients.') %} nav-link--active" aria-current="page{% endif %}">Patients</a>
+          {% if current_user.is_admin %}
+          <a href="{{ url_for('admin.users') }}" class="nav-link{% if ep.startswith('admin.') %} nav-link--active" aria-current="page{% endif %}">Admin</a>
+          {% endif %}
+          <a href="{{ url_for('auth.change_password') }}" class="nav-link{% if ep.startswith('auth.') %} nav-link--active" aria-current="page{% endif %}">Account</a>
+          <form method="POST" action="{{ url_for('auth.logout') }}" class="nav-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="nav-link nav-link--button">Sign out</button>
+          </form>
+        {% else %}
+          <a href="{{ url_for('main.landing') }}" class="nav-link{% if ep == 'main.landing' %} nav-link--active" aria-current="page{% endif %}">Home</a>
+          <a href="{{ url_for('auth.login') }}" class="nav-link nav-link--cta{% if ep == 'auth.login' %} nav-link--active" aria-current="page{% endif %}">Sign in</a>
+        {% endif %}
       </nav>
     </div>
   </header>
 
   <main class="page{% block page_class %}{% endblock %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+      <div class="alert {{ 'alert-error' if category == 'error' else 'alert-success' }}" role="status">
+        <div>{{ message }}</div>
+      </div>
+      {% endfor %}
+    {% endwith %}
     {% block content %}{% endblock %}
   </main>
 </body>

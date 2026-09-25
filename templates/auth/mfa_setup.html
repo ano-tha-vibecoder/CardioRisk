@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Two-factor authentication — CardioRisk{% endblock %}
+{% block content %}
+<div class="page-intro">
+  <h2>Account</h2>
+  <p>Signed in as {{ current_user.name }} ({{ current_user.email }}), {{ current_user.role }}.</p>
+</div>
+{% include "auth/_account_nav.html" %}
+{% if enabled %}
+<div class="card narrow-card"><div class="card-body">
+  <p><strong>Two-factor authentication is on.</strong> If you lose your device, ask a clinic administrator to reset it.</p>
+</div></div>
+{% else %}
+{% if current_user.organization.require_mfa %}
+<div class="alert alert-warning" role="status"><div>Your clinic requires two-factor authentication. Set it up to continue.</div></div>
+{% endif %}
+{% if error %}<div class="alert alert-error" role="alert"><div>{{ error }}</div></div>{% endif %}
+<form method="POST" class="card narrow-card" novalidate>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card-body mfa-setup">
+    <ol class="plain-steps">
+      <li>Scan this code with an authenticator app (Google Authenticator, Microsoft Authenticator, 1Password…).</li>
+      <li>Or enter this key manually: <code class="secret">{{ secret }}</code></li>
+      <li>Enter the 6-digit code the app shows.</li>
+    </ol>
+    <img class="qr" src="{{ qr }}" alt="QR code for your authenticator app" width="180" height="180">
+    <div class="form-group">
+      <label for="code">Code</label>
+      <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required>
+    </div>
+  </div>
+  <div class="form-actions"><button type="submit" class="btn btn-primary">Turn on</button></div>
+</form>
+{% endif %}
+{% endblock %}

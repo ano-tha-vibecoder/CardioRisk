@@ -29,8 +29,8 @@
 
 {% block content %}
 <div class="page-intro">
-  <h2>Coronary Artery Disease Risk Assessment</h2>
-  <p>Enter the patient's clinical measurements below. The model uses {{ model_metadata.features|length }} derived features to estimate the probability of angiographically significant coronary artery disease.</p>
+  <h2>New assessment</h2>
+  <p>Enter the clinical measurements below. The model uses {{ model_metadata.features|length }} derived features to estimate the probability of angiographically significant coronary artery disease.</p>
 </div>
 
 {% if error %}
@@ -56,12 +56,14 @@
     <div class="form-section">
       <div class="section-label">
         <div class="section-icon" aria-hidden="true">&#128100;</div>
-        <span>Demographics</span>
+        <span>Patient</span>
       </div>
-      <div class="form-grid">
-        {{ number('age', 'Age', 'Years (training range 29 – 77)', 18, 110, 54) }}
-        {{ choice('sex', 'Sex', 'Sex recorded in the training data', [('1', 'Male'), ('0', 'Female')]) }}
-      </div>
+      <p class="patient-summary">
+        <strong>{{ patient.full_name }}</strong> · MRN {{ patient.mrn }} ·
+        {{ 'Female' if patient.sex == 'F' else 'Male' }} · age {{ age }}
+        <span class="hint">Age and sex are taken from the patient record. <a href="{{ url_for('patients.edit', patient_id=patient.id) }}">Edit record</a></span>
+      </p>
+      {% if errors.get('age') %}<p class="field-error">{{ errors['age'] }}</p>{% endif %}
     </div>
 
     <div class="form-section">
@@ -97,8 +99,9 @@
   <div class="form-actions">
     <button type="submit" class="btn btn-primary">
       <span aria-hidden="true">&#9654;</span>
-      Run Risk Assessment
+      Run and save assessment
     </button>
+    <a class="btn btn-secondary" href="{{ url_for('patients.detail', patient_id=patient.id) }}">Cancel</a>
   </div>
 </form>
 

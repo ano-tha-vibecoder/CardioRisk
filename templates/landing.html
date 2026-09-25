@@ -52,8 +52,8 @@
           the probability of coronary artery disease — with transparent SHAP explanations for every prediction.
         </p>
         <div class="hero-actions">
-          <a href="{{ url_for('assess') }}" class="btn btn-primary btn-lg">
-            Start Assessment
+          <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">
+            Sign in
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <path d="M5 12h14M13 6l6 6-6 6"/>
             </svg>
@@ -168,8 +168,8 @@
               <path d="M12 9v4M12 17h.01"/>
             </svg>
           </div>
-          <h4>Risk Stratification</h4>
-          <p>Clear Low, Moderate, and High risk categories with probability scores to guide follow-up conversations.</p>
+          <h4>Guideline + ML, on record</h4>
+          <p>Every assessment shows the ESC pre-test probability next to the ML estimate and is saved to the patient's history with a full audit trail.</p>
         </article>
       </div>
     </section>
@@ -230,11 +230,11 @@
             <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
           </svg>
           <div>
-            <h3>Ready to assess a patient?</h3>
-            <p>The intake form takes about two minutes to complete.</p>
+            <h3>Bring CardioRisk to your clinic</h3>
+            <p>Accounts are set up per clinic by our team. Existing users can sign in.</p>
           </div>
         </div>
-        <a href="{{ url_for('assess') }}" class="btn btn-primary btn-lg">Begin Assessment</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Sign in</a>
       </div>
     </section>
 

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% from "_macros.html" import pager %}
+{% block title %}Patients — CardioRisk{% endblock %}
+{% block content %}
+<div class="page-intro page-intro--row">
+  <div><h2>Patients</h2><p>{{ page.total }} patient{{ '' if page.total == 1 else 's' }}{% if q %} matching “{{ q }}”{% endif %}.</p></div>
+  <a href="{{ url_for('patients.create') }}" class="btn btn-primary">New patient</a>
+</div>
+<form method="GET" class="search-bar" role="search">
+  <label for="q" class="visually-hidden">Search patients</label>
+  <input type="search" id="q" name="q" value="{{ q }}" placeholder="Search by name or MRN" maxlength="100">
+  <button type="submit" class="btn btn-secondary">Search</button>
+</form>
+<section class="card">
+  {% if page.items %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">Name</th><th scope="col">MRN</th><th scope="col">Date of birth</th><th scope="col">Sex</th></tr></thead>
+      <tbody>
+        {% for p in page.items %}
+        <tr>
+          <td><a href="{{ url_for('patients.detail', patient_id=p.id) }}">{{ p.full_name }}</a></td>
+          <td>{{ p.mrn }}</td>
+          <td>{{ p.date_of_birth.isoformat() }}</td>
+          <td>{{ 'Female' if p.sex == 'F' else 'Male' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body"><p class="empty">No patients found.</p></div>
+  {% endif %}
+</section>
+{{ pager(page, 'patients.index', q=q) }}
+{% endblock %}

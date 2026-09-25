@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% from "_macros.html" import risk_pill, when %}
+{% block title %}Dashboard — CardioRisk{% endblock %}
+{% block content %}
+<div class="page-intro page-intro--row">
+  <div>
+    <h2>Dashboard</h2>
+    <p>Activity for {{ current_user.organization.name }}. Times are {{ clinic_tz }}.</p>
+  </div>
+  <a href="{{ url_for('patients.create') }}" class="btn btn-primary">New patient</a>
+</div>
+
+<section class="tiles" aria-label="Summary">
+  <div class="tile"><span class="tile-value">{{ stats.patients }}</span><span class="tile-label">Patients</span></div>
+  <div class="tile"><span class="tile-value">{{ stats.assessments_30 }}</span><span class="tile-label">Assessments, last 30 days</span></div>
+  <div class="tile"><span class="tile-value">{{ stats.high_30 }}</span><span class="tile-label">High-risk results, last 30 days</span></div>
+  <div class="tile"><span class="tile-value">{{ stats.mine_30 }}</span><span class="tile-label">Your assessments, last 30 days</span></div>
+</section>
+
+<div class="dash-grid">
+  <section class="card">
+    <div class="card-header">
+      <h3>Risk distribution</h3>
+      <p>ML risk band of assessments in the last 30 days.</p>
+    </div>
+    <div class="card-body">
+      {% if stats.assessments_30 %}
+      <ul class="dist-list">
+        {% for r in risk %}
+        <li class="dist-row" title="{{ r.band }}: {{ r.count }} ({{ '%.0f'|format(r.share * 100) }}%)">
+          <span class="dist-label">{{ r.band }}</span>
+          <svg class="dist-track" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden="true">
+            {% if r.count %}<rect class="dist-fill dist-fill--{{ r.band|lower }}" x="0" y="0" height="10" rx="3" width="{{ '%.1f'|format([r.share * 100, 2]|max) }}"></rect>{% endif %}
+          </svg>
+          <span class="dist-value">{{ r.count }} <span class="muted">· {{ '%.0f'|format(r.share * 100) }}%</span></span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="empty">No assessments in the last 30 days.</p>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-header">
+      <h3>Assessments per week</h3>
+      <p>Last {{ weeks }} weeks. Hover a bar for its count.</p>
+    </div>
+    <div class="card-body">
+      <figure class="chart">
+        <svg viewBox="0 -14 {{ chart.w }} {{ chart.h + 34 }}" role="img" aria-label="Weekly assessments, peak {{ chart.peak }} per week">
+          <line class="chart-grid" x1="0" x2="{{ chart.w }}" y1="{{ chart.h }}" y2="{{ chart.h }}"></line>
+          {% for b in chart.bars %}
+          <g class="chart-bar">
+            <title>Week of {{ b.start }}: {{ b.count }} assessment{{ '' if b.count == 1 else 's' }}</title>
+            <rect class="chart-hit" x="{{ '%.1f'|format(b.hit_x) }}" y="-14" width="{{ '%.1f'|format(b.hit_w) }}" height="{{ chart.h + 14 }}"></rect>
+            {% if b.path %}<path class="chart-fill" d="{{ b.path }}"></path>{% endif %}
+            {% if loop.last or b.count == chart.peak and b.count %}<text class="chart-value" x="{{ '%.1f'|format(b.label_x) }}" y="{{ '%.1f'|format(b.label_y) }}" text-anchor="middle">{{ b.count }}</text>{% endif %}
+          </g>
+          {% endfor %}
+          <text class="chart-axis" x="0" y="{{ chart.h + 18 }}">{{ chart.bars[0].start.strftime('%d %b') }}</text>
+          <text class="chart-axis" x="{{ chart.w }}" y="{{ chart.h + 18 }}" text-anchor="end">{{ chart.bars[-1].start.strftime('%d %b') }}</text>
+        </svg>
+      </figure>
+    </div>
+  </section>
+</div>
+
+<section class="card card--spaced-top">
+  <div class="card-header">
+    <h3>Recent assessments</h3>
+  </div>
+  {% if recent %}
+  <div class="table-wrap">
+    <table class="data-table">
+      <thead><tr><th scope="col">When</th><th scope="col">Patient</th><th scope="col">MRN</th><th scope="col" class="num">ML probability</th><th scope="col">ML band</th><th scope="col" class="num">ESC PTP</th><th scope="col">Clinician</th></tr></thead>
+      <tbody>
+        {% for a in recent %}
+        <tr>
+          <td><a href="{{ url_for('patients.assessment', assessment_id=a.id) }}">{{ when(a.created_at) }}</a></td>
+          <td>{{ a.patient.full_name }}</td>
+          <td>{{ a.patient.mrn }}</td>
+          <td class="num">{{ '%.1f'|format(a.probability * 100) }}%</td>
+          <td>{{ risk_pill(a.risk_band) }}</td>
+          <td class="num">{{ '%.0f%%'|format(a.ptp) if a.ptp is not none else '—' }}</td>
+          <td>{{ a.clinician.name }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="card-body"><p class="empty">No assessments yet. <a href="{{ url_for('patients.create') }}">Add a patient</a> to start.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

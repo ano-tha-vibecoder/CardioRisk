@@ -1,0 +1,4 @@
+<nav class="tabs" aria-label="Account">
+  <a href="{{ url_for('auth.change_password') }}" class="tab{% if request.endpoint == 'auth.change_password' %} tab--active" aria-current="page{% endif %}">Password</a>
+  <a href="{{ url_for('auth.mfa_setup') }}" class="tab{% if request.endpoint == 'auth.mfa_setup' %} tab--active" aria-current="page{% endif %}">Two-factor authentication</a>
+</nav>

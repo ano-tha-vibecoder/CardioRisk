@@ -25,3 +25,4 @@ Thumbs.db
 # Tooling
 .venv/
 .pytest_cache/
+instance/
