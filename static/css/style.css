@@ -446,12 +446,36 @@ h1, h2, h3, h4, h5, h6,
   color: #991b1b;
 }
 
+.alert-warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.alert-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
 .alert-icon {
   flex-shrink: 0;
   font-size: 1.1rem;
 }
 
+.card--spaced-top { margin-top: 20px; }
+.card--spaced-bottom { margin-bottom: 20px; }
+
 /* ── Form ── */
+.form-group.has-error input,
+.form-group.has-error select {
+  border-color: #dc2626;
+}
+
+.field-error {
+  font-size: 0.75rem;
+  color: #b91c1c;
+}
+
 .form-section {
   margin-bottom: 28px;
 }
@@ -1215,14 +1239,13 @@ h1, h2, h3, h4, h5, h6,
   overflow: hidden;
 }
 
-.shap-bar-fill {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.5s ease;
+svg.shap-bar-track {
+  display: block;
+  width: 100%;
 }
 
-.shap-bar-fill.positive { background: var(--shap-positive); }
-.shap-bar-fill.negative { background: var(--shap-negative); }
+.shap-bar-fill.positive { fill: var(--shap-positive); }
+.shap-bar-fill.negative { fill: var(--shap-negative); }
 
 .shap-val {
   font-size: 0.78rem;

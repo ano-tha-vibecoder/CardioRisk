@@ -1,20 +1,32 @@
 {% extends "base.html" %}
 
 {% block title %}Assessment Result — CardioRisk{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/result.js') }}" defer></script>{% endblock %}
 
 {% block content %}
+{% set metrics = model_metadata.evaluation.metrics %}
 <div class="page-intro">
   <h2>Assessment Result</h2>
-  <p>Prediction generated from the submitted clinical profile. Review feature contributions below.</p>
+  <p>Estimate generated from the submitted clinical profile. Review feature contributions below.</p>
 </div>
 
-{% set risk_class = 'risk-low' if risk == 'Low' else 'risk-moderate' if risk == 'Moderate' else 'risk-high' %}
-{% set circumference = 283 %}
-{% set dash_offset = circumference - (circumference * prob / 100) %}
+{% if warnings %}
+<div class="alert alert-warning" role="status">
+  <span class="alert-icon" aria-hidden="true">&#9888;</span>
+  <div>
+    <strong>Interpret with caution.</strong>
+    <ul class="alert-list">{% for w in warnings %}<li>{{ w }}</li>{% endfor %}</ul>
+  </div>
+</div>
+{% endif %}
 
-<div class="card" style="margin-bottom: 20px;">
+{% set risk_class = 'risk-low' if result.risk == 'Low' else 'risk-moderate' if result.risk == 'Moderate' else 'risk-high' %}
+{% set circumference = 283 %}
+{% set dash_offset = circumference - (circumference * result.prob / 100) %}
+
+<div class="card card--spaced-bottom">
   <div class="result-hero {{ risk_class }}">
-    <div class="prob-ring" aria-label="Probability {{ prob }} percent">
+    <div class="prob-ring" role="img" aria-label="Estimated probability {{ result.prob }} percent">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <circle class="prob-ring-bg" cx="50" cy="50" r="45"></circle>
         <circle class="prob-ring-fill" cx="50" cy="50" r="45"
@@ -22,16 +34,19 @@
           stroke-dashoffset="{{ dash_offset }}"></circle>
       </svg>
       <div class="prob-ring-text">
-        <span class="value">{{ prob }}</span>
-        <span class="unit">% risk</span>
+        <span class="value">{{ result.prob }}</span>
+        <span class="unit">% probability</span>
       </div>
     </div>
     <div class="result-content">
-      <h2>{{ 'Heart Disease Detected' if pred == 1 else 'No Heart Disease Detected' }}</h2>
-      <p>Based on logistic regression analysis of patient vitals and exercise test results.</p>
+      <h2>{{ 'Elevated probability of coronary artery disease' if result.positive else 'Low-to-moderate probability of coronary artery disease' }}</h2>
+      <p>Estimated by a logistic regression model trained on the UCI Cleveland cohort
+        ({{ model_metadata.training_data.n_samples }} patients referred for angiography,
+        {{ '%.0f'|format(model_metadata.training_data.prevalence * 100) }}% disease prevalence).
+        Probabilities reflect that referral population, not the general public.</p>
       <span class="risk-badge">
         <span aria-hidden="true">&#9679;</span>
-        {{ risk }} Risk
+        {{ result.risk }} Risk
       </span>
     </div>
   </div>
@@ -39,46 +54,45 @@
 
 <div class="model-stats">
   <div class="stat-item">
-    <span class="stat-value">Logistic Reg.</span>
-    <span class="stat-label">Model</span>
+    <span class="stat-value">v{{ model_metadata.model_version }}</span>
+    <span class="stat-label">Logistic Reg.</span>
   </div>
   <div class="stat-item">
-    <span class="stat-value">{{ '%.3f'|format(model_metadata.evaluation.auc) }}</span>
-    <span class="stat-label">AUC-ROC</span>
+    <span class="stat-value">{{ '%.2f'|format(metrics.auc.mean) }} ± {{ '%.2f'|format(metrics.auc.std) }}</span>
+    <span class="stat-label">Cross-validated AUC</span>
   </div>
   <div class="stat-item">
-    <span class="stat-value">{{ '%.3f'|format(model_metadata.evaluation.f1) }}</span>
-    <span class="stat-label">F1 Score</span>
+    <span class="stat-value">{{ '%.0f'|format(metrics.sensitivity.mean * 100) }}% / {{ '%.0f'|format(metrics.specificity.mean * 100) }}%</span>
+    <span class="stat-label">Sensitivity / Specificity</span>
   </div>
 </div>
 
-<div class="card" style="margin-top: 20px;">
+<div class="card card--spaced-top">
   <div class="card-header">
     <h3>Feature Influence (SHAP)</h3>
-    <p>Top factors pushing the prediction toward or away from heart disease.</p>
+    <p>How much each of this patient's values moved the estimate above or below the cohort average (log-odds units). These describe the model's behaviour, not causes.</p>
   </div>
   <div class="card-body">
     <div class="shap-list">
-      {% for fname, fval in shap_pairs %}
-      {% set bar_pct = [([fval|abs * 100, 100]|min), 5]|max %}
-      {% set direction = 'positive' if fval > 0 else 'negative' %}
+      {% for c in result.contributions %}
+      {% set direction = 'positive' if c.value > 0 else 'negative' %}
       <div class="shap-row">
-        <span class="shap-label">{{ feature_labels.get(fname, fname) }}</span>
+        <span class="shap-label">{{ c.label }}: <span class="shap-shown">{{ c.shown }}</span></span>
         <div class="shap-bar-wrap">
-          <div class="shap-bar-track">
-            <div class="shap-bar-fill {{ direction }}" style="width: {{ bar_pct }}%"></div>
-          </div>
+          <svg class="shap-bar-track" viewBox="0 0 100 8" preserveAspectRatio="none" aria-hidden="true">
+            <rect class="shap-bar-fill {{ direction }}" x="0" y="0" height="8" rx="4" width="{{ '%.1f'|format(c.width) }}"></rect>
+          </svg>
         </div>
-        <span class="shap-val {{ direction }}">{{ "%+.3f"|format(fval) }}</span>
+        <span class="shap-val {{ direction }}">{{ "%+.3f"|format(c.value) }}</span>
       </div>
       {% endfor %}
     </div>
     <div class="shap-legend">
       <span class="legend-item">
-        <span class="legend-dot positive"></span> Increases risk
+        <span class="legend-dot positive"></span> Increases estimate
       </span>
       <span class="legend-item">
-        <span class="legend-dot negative"></span> Decreases risk
+        <span class="legend-dot negative"></span> Decreases estimate
       </span>
     </div>
   </div>
@@ -86,11 +100,11 @@
 
 <div class="result-actions">
   <a href="{{ url_for('assess') }}" class="btn btn-primary">Assess Another Patient</a>
-  <button type="button" class="btn btn-secondary" onclick="window.print()">Print Report</button>
+  <button type="button" class="btn btn-secondary" data-action="print">Print Report</button>
 </div>
 
 <p class="disclaimer">
   <strong>Disclaimer:</strong> This tool is a decision support aid only and does not constitute a clinical diagnosis.
-  Always consult a qualified healthcare professional. Ghost Grid Technologies, 2024.
+  It has not been externally validated or cleared by any regulator. Always consult a qualified healthcare professional.
 </p>
 {% endblock %}

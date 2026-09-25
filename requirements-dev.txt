@@ -1,2 +1,4 @@
+-r requirements.txt
 pytest==8.4.1
-imbalanced-learn==0.14.0
+# Only used by tests to verify the in-app SHAP computation.
+shap==0.51.0

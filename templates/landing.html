@@ -46,10 +46,10 @@
           </svg>
           Powered by machine learning
         </span>
-        <h2 class="hero-title">Smarter cardiovascular risk assessment</h2>
+        <h2 class="hero-title">Explainable coronary artery disease risk estimates</h2>
         <p class="hero-lead">
           CardioRisk analyzes patient vitals, lab results, and exercise test data to estimate
-          heart disease probability — with transparent SHAP explanations for every prediction.
+          the probability of coronary artery disease — with transparent SHAP explanations for every prediction.
         </p>
         <div class="hero-actions">
           <a href="{{ url_for('assess') }}" class="btn btn-primary btn-lg">
@@ -88,7 +88,7 @@
               </div>
             </div>
             <div class="hero-card-details">
-              <p class="hero-card-status">Moderate Risk</p>
+              <p class="hero-card-status">High Risk</p>
               <ul class="hero-card-features">
                 <li><span class="bar bar-high"></span> Exercise Angina</li>
                 <li><span class="bar bar-mid"></span> ST Depression</li>
@@ -106,22 +106,22 @@
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M3 3v18h18"/><path d="M7 16l4-6 4 3 5-7"/>
           </svg>
-          <span class="stat-block-value">0.911</span>
-          <span class="stat-block-label">AUC-ROC</span>
+          <span class="stat-block-value">{{ '%.2f'|format(model_metadata.evaluation.metrics.auc.mean) }}</span>
+          <span class="stat-block-label">Cross-validated AUC</span>
         </div>
         <div class="stat-block">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <path d="M12 20V10M18 20V4M6 20v-4"/>
           </svg>
-          <span class="stat-block-value">0.818</span>
-          <span class="stat-block-label">F1 Score</span>
+          <span class="stat-block-value">{{ '%.2f'|format(model_metadata.evaluation.metrics.f1.mean) }}</span>
+          <span class="stat-block-label">Cross-validated F1</span>
         </div>
         <div class="stat-block">
           <svg class="stat-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
             <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
             <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
           </svg>
-          <span class="stat-block-value">15</span>
+          <span class="stat-block-value">{{ model_metadata.features|length }}</span>
           <span class="stat-block-label">Clinical Features</span>
         </div>
         <div class="stat-block">
@@ -147,8 +147,8 @@
               <path d="M9 14h6M10 11h4"/>
             </svg>
           </div>
-          <h4>Validated ML Model</h4>
-          <p>Logistic regression trained on the Cleveland heart disease dataset with cross-validated performance metrics.</p>
+          <h4>Transparent ML Model</h4>
+          <p>Regularised logistic regression trained on the UCI Cleveland cohort ({{ model_metadata.training_data.n_samples }} patients), with metrics from repeated cross-validation of the full pipeline.</p>
         </article>
         <article class="feature-card">
           <div class="feature-icon">

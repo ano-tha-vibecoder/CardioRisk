@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block head %}{% endblock %}
+  {% block scripts %}{% endblock %}
 </head>
 <body>
   <header class="site-header">
@@ -25,8 +26,8 @@
         </div>
       </a>
       <nav class="header-nav" aria-label="Main navigation">
-        <a href="{{ url_for('landing') }}" class="nav-link{% if request.endpoint == 'landing' %} nav-link--active{% endif %}">Home</a>
-        <a href="{{ url_for('assess') }}" class="nav-link nav-link--cta{% if request.endpoint == 'assess' %} nav-link--active{% endif %}">Start Assessment</a>
+        <a href="{{ url_for('landing') }}" class="nav-link{% if request.endpoint == 'landing' %} nav-link--active" aria-current="page{% endif %}">Home</a>
+        <a href="{{ url_for('assess') }}" class="nav-link nav-link--cta{% if request.endpoint == 'assess' %} nav-link--active" aria-current="page{% endif %}">Start Assessment</a>
       </nav>
     </div>
   </header>
